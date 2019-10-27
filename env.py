@@ -6,6 +6,12 @@ class ChannelFirst(gym.ObservationWrapper):
   def observation(self, observation):
     return np.moveaxis(observation, -1, 0)
 
+class NormalizeObservation(gym.ObservationWrapper):
+  def observation(self, observation):
+    mean = np.mean(observation)
+    std = np.std(observation)
+    return (observation - mean) / (std + 1e-8)
+
 class TorchObservation(gym.ObservationWrapper):
   def observation(self, observation):
     observation = observation.astype(np.float32)

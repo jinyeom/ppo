@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from tensorbook import TensorBook
 from utils import pretty_args, export_args, mkdir_exp
-from env import make_env
+from env import make_env, NormalizeObservation
 from agent import ContinuousPolicyAgent
 from ppo import PPO
 from play import play
@@ -19,7 +19,11 @@ def main(args):
   pt.random.manual_seed(args.seed)
 
   print("==== Creating a training environment...")
-  env = make_env(args.env_id, num_envs=args.num_envs)
+  env = make_env(
+    args.env_id,
+    NormalizeObservation,
+    num_envs=args.num_envs
+  )
 
   print("==== Creating a evaluation environment...")
   eval_env = gym.make(args.env_id)

@@ -59,7 +59,8 @@ class PPO:
       device,
       num_epochs=10,
       batch_size=64,
-      lr=3e-4,
+      lr_max=3e-4,
+      lr_min=1e-4,
       eps=0.2,
       gamma=0.99,
       lam=0.95,
@@ -71,7 +72,8 @@ class PPO:
   ):
     self.num_epochs = num_epochs
     self.batch_size = batch_size
-    self.lr = lr
+    self.lr_max = lr_max
+    self.lr_min = lr_min
     self.eps = eps
     self.gamma = gamma
     self.lam = lam
@@ -82,14 +84,14 @@ class PPO:
     self.target_kldiv = target_kldiv
 
     self.agent = agent
-    self.optimizer = Adam(agent.parameters(), lr=lr)
+    self.optimizer = Adam(agent.parameters(), lr=lr_max)
     self.device = device
 
   def __repr__(self):
     return f'PPO({type(self.agent)}, {type(self.optimizer)})'
   
   def update_lr(self, step, total):
-    lr = self.lr - (self.lr * (step / total))
+    lr = self.lr_max - ((self.lr_max - self.lr_min) * (step / total))
     for param_group in self.optimizer.param_groups:
       param_group['lr'] = lr
     return lr
@@ -143,11 +145,7 @@ class PPO:
       ep_kldiv = 0.0
       for batch in data_loader:
         policy_loss, entropy, value_loss = self.compute_losses(batch)
-        total_loss = (
-          policy_loss - 
-          self.entropy_coef * entropy + 
-          self.value_coef * value_loss
-        )
+        total_loss = policy_loss - self.entropy_coef * entropy + self.value_coef * value_loss
 
         self.optimizer.zero_grad()
         total_loss.backward()
@@ -168,6 +166,7 @@ class PPO:
 
     num_steps = (ep + 1) * len(data_loader) * self.batch_size
     return {
+      'num_epochs': (ep + 1),
       'policy_loss': ep_policy_loss / num_steps,
       'entropy': ep_entropy / num_steps,
       'value_loss': ep_value_loss / num_steps,

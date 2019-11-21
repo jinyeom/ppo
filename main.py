@@ -4,8 +4,7 @@ import torch as pt
 from torch.utils.tensorboard import SummaryWriter
 import numpy as np
 from tqdm import tqdm
-from tensorbook import TensorBook
-from utils import pretty_args, export_args, mkdir_exp
+from utils import pretty_args, export_args, mkdir_exp, TensorBook
 from env import make_env, NormalizeObservation
 from agent import ContinuousPolicyAgent
 from ppo import PPO

@@ -1,5 +1,5 @@
 from copy import deepcopy
-import torch as pt
+import torch
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import Dataset, DataLoader
 from torch.optim import Adam
@@ -20,7 +20,7 @@ class RolloutDataset(Dataset):
   def _compute_return(self, rollout, gamma, lam, alpha):    
     gae = 0.0
     next_vpred = rollout.appx['vpred'][0]
-    returns = pt.zeros_like(rollout.reward)
+    returns = torch.zeros_like(rollout.reward)
     for i in reversed(range(rollout.size)):
       reward = rollout.reward[i]
       vpred = rollout.vpred[i]
@@ -48,6 +48,7 @@ class RolloutDataset(Dataset):
       'obs': self.obs[idx],
       'action': self.action[idx],
       'logpi': self.logpi[idx],
+      'vpred': self.vpred[idx],
       'ret': self.ret[idx],
       'adv': self.adv[idx],
     }
@@ -100,6 +101,7 @@ class PPO:
     obs = batch['obs'].to(self.device)
     action = batch['action'].to(self.device)
     old_logpi = batch['logpi'].to(self.device)
+    old_vpred = batch['vpred'].to(self.device)
     adv = batch['adv'].to(self.device)
     ret = batch['ret'].to(self.device)
     
@@ -107,16 +109,19 @@ class PPO:
 
     # Compute the policy loss for PPO (maximize).
     logpi = pi.log_prob(action).sum(-1, keepdim=True)
-    ratio = pt.exp(logpi - old_logpi)
+    ratio = torch.exp(logpi - old_logpi)
     surr1 = ratio * adv
-    surr2 = pt.clamp(ratio, 1 - self.eps, 1 + self.eps) * adv
-    policy_loss = -pt.min(surr1, surr2).mean()
+    surr2 = torch.clamp(ratio, 1 - self.eps, 1 + self.eps) * adv
+    policy_loss = -torch.min(surr1, surr2).mean()
     
     # Compute the entropy regularizer (maximize).
     entropy = pi.entropy().mean()
     
     # Compute the value loss.
-    value_loss = 0.5 * pt.mean((ret - vpred) ** 2)
+    clipped = old_vpred + torch.clamp(vpred - old_vpred, -self.eps, self.eps)
+    surr1 = (vpred - ret) ** 2
+    surr2 = (clipped - ret) ** 2
+    value_loss = 0.5 * torch.max(surr1, surr2).mean()
     
     return policy_loss, entropy, value_loss
 
@@ -124,10 +129,10 @@ class PPO:
     obs = batch['obs'].to(self.device)
     action = batch['action'].to(self.device)
     old_logpi = batch['logpi'].to(self.device)
-    with pt.no_grad():
+    with torch.no_grad():
       pi = self.agent.act(obs)
       logpi = pi.log_prob(action).sum(-1, keepdim=True)
-    return pt.sum(old_logpi - logpi)
+    return torch.sum(old_logpi - logpi)
 
   def update(self, data):
     data_loader = DataLoader(

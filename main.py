@@ -21,7 +21,7 @@ def main(args):
   env = make_env(args.env_id, NormalizeObservation, num_envs=args.num_envs)
 
   print("== Creating a evaluation environment...")
-  eval_env = gym.make(args.env_id)
+  eval_env = make_env(args.env_id, NormalizeObservation, num_envs=1)
   obs_dim = eval_env.observation_space.shape[0]
   act_dim = eval_env.action_space.shape[0]
   

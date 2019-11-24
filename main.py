@@ -7,7 +7,7 @@ from tqdm import tqdm
 from utils import pretty_args, export_args, mkdir_exp, TensorBook
 from env import make_env, NormalizeObservation
 from agent import ContinuousPolicyAgent
-from ppo import PPO
+from ppo import ProximalPolicyOptimization
 from play import play
 
 def main(args):
@@ -33,7 +33,7 @@ def main(args):
   data = TensorBook(args.env_id, args.rollout_steps)
   
   print("== Creating a PPO optimizer...")
-  optimizer = PPO(
+  optimizer = ProximalPolicyOptimization(
     agent, 
     device,
     num_epochs=args.num_epochs,

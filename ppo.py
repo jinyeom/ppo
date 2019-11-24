@@ -53,7 +53,7 @@ class RolloutDataset(Dataset):
       'adv': self.adv[idx],
     }
 
-class PPO:
+class ProximalPolicyOptimization:
   def __init__(
       self,
       agent,

@@ -12,11 +12,11 @@ class DeepMindAtari(nn.Module):
     self.fc4 = nn.Linear(32 * 7 * 7, hid_dim)
 
   def forward(self, x):
-    x = F.relu(self.conv1(x), inplace=True)
-    x = F.relu(self.conv2(x), inplace=True)
-    x = F.relu(self.conv3(x), inplace=True)
+    x = F.relu_(self.conv1(x))
+    x = F.relu_(self.conv2(x))
+    x = F.relu_(self.conv3(x))
     x = pt.flatten(x, start_dim=1)
-    return F.relu(self.fc4(x), inplace=True)
+    return F.relu_(self.fc4(x))
 
 class ActorCritic(nn.Module):
   def __init__(self, obs_dim, act_dim, hid_dim, num_layers=3):

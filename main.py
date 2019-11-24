@@ -18,11 +18,7 @@ def main(args):
   pt.random.manual_seed(args.seed)
 
   print("== Creating a training environment...")
-  env = make_env(
-    args.env_id,
-    NormalizeObservation,
-    num_envs=args.num_envs
-  )
+  env = make_env(args.env_id, NormalizeObservation, num_envs=args.num_envs)
 
   print("== Creating a evaluation environment...")
   eval_env = gym.make(args.env_id)
@@ -100,7 +96,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--env-id', type=str, default='BipedalWalker-v2')
   parser.add_argument('--seed', type=int, default=0)
-  parser.add_argument('--num-envs', type=int, default=16)
+  parser.add_argument('--num-envs', type=int, default=8)
   parser.add_argument('--hid-dim', type=int, default=64)
   parser.add_argument('--num-steps', type=int, default=4000000)
   parser.add_argument('--rollout-steps', type=int, default=2048)

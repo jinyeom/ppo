@@ -19,12 +19,12 @@ def play(env, agent, device, repeat=1, render=False):
   return perf / repeat
 
 def main(args):
-  print("==== Creating a training environment...")
+  print("== Creating a training environment...")
   env = gym.make('BipedalWalker-v2')
   obs_dim = env.observation_space.shape[0]
   act_dim = env.action_space.shape[0]
 
-  print("==== Creating an agent....")
+  print("== Creating an agent....")
   device = pt.device('cuda' if pt.cuda.is_available() else 'cpu')
   agent = ContinuousPolicyAgent(obs_dim, act_dim, args.hid_dim).to(device)
   agent.load_state_dict(pt.load(args.model_path))

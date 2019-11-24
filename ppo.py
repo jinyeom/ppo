@@ -108,9 +108,9 @@ class PPO:
     # Compute the policy loss for PPO (maximize).
     logpi = pi.log_prob(action).sum(-1, keepdim=True)
     ratio = pt.exp(logpi - old_logpi)
-    term1 = ratio * adv
-    term2 = pt.clamp(ratio, 1 - self.eps, 1 + self.eps) * adv
-    policy_loss = -pt.min(term1, term2).mean()
+    surr1 = ratio * adv
+    surr2 = pt.clamp(ratio, 1 - self.eps, 1 + self.eps) * adv
+    policy_loss = -pt.min(surr1, surr2).mean()
     
     # Compute the entropy regularizer (maximize).
     entropy = pi.entropy().mean()

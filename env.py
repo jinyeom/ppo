@@ -2,10 +2,6 @@ import numpy as np
 import torch as pt
 import gym
 
-class ChannelFirst(gym.ObservationWrapper):
-  def observation(self, observation):
-    return np.moveaxis(observation, -1, 0)
-
 class NormalizeObservation(gym.ObservationWrapper):
   def observation(self, observation):
     mean = np.mean(observation)
@@ -37,8 +33,13 @@ class TorchDone(gym.Wrapper):
     done = done.astype(np.float32)
     done = done[:, np.newaxis]
     return pt.from_numpy(done)
-  
+
 def make_env(env_id, *wrappers, num_envs=1):
+  if num_envs == 1:
+    env = gym.make(env_id)
+    for wrapper in wrappers:
+      env = wrapper(env)
+    return env
   env = gym.vector.make(
     env_id, 
     num_envs=num_envs, 
